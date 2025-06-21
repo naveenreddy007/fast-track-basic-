@@ -26,6 +26,7 @@ export interface Booking {
   full_address: string;
   preferred_date: string;
   preferred_time: string;
+  confirmed_time?: string;
   status: string;
   service_id: number;
   latitude?: number;
@@ -110,6 +111,39 @@ export const deleteService = async (id: number) => {
     .from('services')
     .delete()
     .eq('id', id);
+  
+  if (error) throw error;
+};
+
+// Push subscription functions
+export const savePushSubscription = async (userId: string, subscription: any) => {
+  const { data, error } = await supabase
+    .from('admin_push_subscriptions')
+    .upsert({
+      user_id: userId,
+      subscription_token: subscription
+    })
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+};
+
+export const getPushSubscriptions = async () => {
+  const { data, error } = await supabase
+    .from('admin_push_subscriptions')
+    .select('*');
+  
+  if (error) throw error;
+  return data;
+};
+
+export const deletePushSubscription = async (userId: string) => {
+  const { error } = await supabase
+    .from('admin_push_subscriptions')
+    .delete()
+    .eq('user_id', userId);
   
   if (error) throw error;
 };

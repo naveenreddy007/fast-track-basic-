@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GetStaticProps } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -115,14 +115,14 @@ export default function Home({ services }: HomeProps) {
               className="flex items-center space-x-2 rtl:space-x-reverse"
             >
               <Car className="w-8 h-8 text-emerald-600" />
-              <h1 className="text-xl font-bold text-emerald-800">{t('title')}</h1>
+              <h1 className="text-xl font-bold text-gray-800">{t('title')}</h1>
             </motion.div>
             
             <motion.button
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               onClick={switchLanguage}
-              className="glass-button haptic-feedback px-4 py-2 rounded-full flex items-center space-x-2 rtl:space-x-reverse text-emerald-700 font-medium"
+              className="glass-button haptic-feedback px-4 py-2 rounded-full flex items-center space-x-2 rtl:space-x-reverse text-gray-700 font-medium"
             >
               <Globe className="w-4 h-4" />
               <span>{t('language.switch')}</span>
@@ -139,19 +139,22 @@ export default function Home({ services }: HomeProps) {
               transition={{ duration: 0.8 }}
               className="glass p-8 rounded-3xl mb-8"
             >
-              <h2 className="text-4xl md:text-6xl font-bold text-emerald-800 mb-4 animate-float">
+              <h2 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4 animate-float">
                 {t('hero.title')}
                 <br />
                 <span className="text-sandy-600">{t('hero.subtitle')}</span>
               </h2>
-              <p className="text-lg md:text-xl text-emerald-700 mb-8 max-w-2xl mx-auto">
+              <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
                 {t('hero.description')}
+              </p>
+              <p className="text-md md:text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                {t('hero.additionalInfo')}
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
-                className="glass-button haptic-feedback px-8 py-4 rounded-full text-lg font-semibold text-emerald-700 inline-flex items-center space-x-2 rtl:space-x-reverse animate-glow"
+                className="glass-button haptic-feedback px-8 py-4 rounded-full text-lg font-semibold text-gray-700 inline-flex items-center space-x-2 rtl:space-x-reverse animate-glow"
               >
                 <Star className="w-5 h-5" />
                 <span>{t('hero.cta')}</span>
@@ -169,10 +172,10 @@ export default function Home({ services }: HomeProps) {
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h3 className="text-3xl md:text-4xl font-bold text-emerald-800 mb-4">
+              <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
                 {t('services.title')}
               </h3>
-              <p className="text-lg text-emerald-700">{t('services.subtitle')}</p>
+              <p className="text-lg text-gray-700">{t('services.subtitle')}</p>
             </motion.div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -186,10 +189,10 @@ export default function Home({ services }: HomeProps) {
                   className="glass p-6 rounded-2xl hover:scale-105 transition-all duration-300 animate-float"
                   style={{ animationDelay: `${index * 0.5}s` }}
                 >
-                  <h4 className="text-xl font-bold text-emerald-800 mb-3">
+                  <h4 className="text-xl font-bold text-gray-800 mb-3">
                     {locale === 'ar' ? service.name_ar : service.name_en}
                   </h4>
-                  <p className="text-emerald-700 mb-4">
+                  <p className="text-gray-700 mb-4">
                     {locale === 'ar' ? service.description_ar : service.description_en}
                   </p>
                   <div className="flex justify-between items-center mb-4">
@@ -201,7 +204,7 @@ export default function Home({ services }: HomeProps) {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleBookService(service)}
-                    className="w-full glass-button haptic-feedback py-3 rounded-xl font-semibold text-emerald-700"
+                    className="w-full glass-button haptic-feedback py-3 rounded-xl font-semibold text-gray-700"
                   >
                     {t('services.bookNow')}
                   </motion.button>
@@ -214,8 +217,8 @@ export default function Home({ services }: HomeProps) {
         {/* Footer */}
         <footer className="py-8 px-4 mt-16">
           <div className="max-w-4xl mx-auto text-center glass p-6 rounded-2xl">
-            <p className="text-emerald-700 mb-2">{t('footer.copyright')}</p>
-            <p className="text-emerald-600">{t('footer.madeIn')}</p>
+            <p className="text-gray-700 mb-2">{t('footer.copyright')}</p>
+            <p className="text-gray-600">{t('footer.madeIn')}</p>
           </div>
         </footer>
 
@@ -237,12 +240,12 @@ export default function Home({ services }: HomeProps) {
                 className="glass-dark p-6 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto"
               >
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold text-emerald-800">
+                  <h3 className="text-2xl font-bold text-gray-800">
                     {t('booking.title')}
                   </h3>
                   <button
                     onClick={() => setShowBookingForm(false)}
-                    className="text-emerald-600 hover:text-emerald-800 text-2xl"
+                    className="text-gray-600 hover:text-gray-800 text-2xl"
                   >
                     ×
                   </button>
@@ -255,16 +258,16 @@ export default function Home({ services }: HomeProps) {
                     className="text-center py-8"
                   >
                     <div className="text-6xl mb-4">✅</div>
-                    <h4 className="text-xl font-bold text-emerald-800 mb-2">
+                    <h4 className="text-xl font-bold text-gray-800 mb-2">
                       {t('booking.success')}
                     </h4>
-                    <p className="text-emerald-700">{t('booking.successMessage')}</p>
+                    <p className="text-gray-700">{t('booking.successMessage')}</p>
                   </motion.div>
                 ) : (
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {selectedService && (
                       <div className="glass p-4 rounded-xl mb-4">
-                        <h4 className="font-semibold text-emerald-800">
+                        <h4 className="font-semibold text-gray-800">
                           {locale === 'ar' ? selectedService.name_ar : selectedService.name_en}
                         </h4>
                         <p className="text-sandy-600 font-bold">
@@ -274,12 +277,12 @@ export default function Home({ services }: HomeProps) {
                     )}
 
                     <div>
-                      <label className="block text-emerald-800 font-medium mb-2">
+                      <label className="block text-gray-800 font-medium mb-2">
                         {t('booking.customerName')}
                       </label>
                       <input
                         {...register('customer_name', { required: t('booking.required') })}
-                        className="w-full p-3 rounded-xl glass border-0 text-emerald-800 placeholder-emerald-600"
+                        className="w-full p-3 rounded-xl glass border-0 text-gray-800 placeholder-gray-600"
                         placeholder={t('booking.customerNamePlaceholder')}
                       />
                       {errors.customer_name && (
@@ -288,7 +291,7 @@ export default function Home({ services }: HomeProps) {
                     </div>
 
                     <div>
-                      <label className="block text-emerald-800 font-medium mb-2">
+                      <label className="block text-gray-800 font-medium mb-2">
                         {t('booking.whatsappNumber')}
                       </label>
                       <input
@@ -296,7 +299,7 @@ export default function Home({ services }: HomeProps) {
                           required: t('booking.required'),
                           validate: (value) => validateWhatsAppNumber(value) || t('booking.invalidPhone')
                         })}
-                        className="w-full p-3 rounded-xl glass border-0 text-emerald-800 placeholder-emerald-600"
+                        className="w-full p-3 rounded-xl glass border-0 text-gray-800 placeholder-gray-600"
                         placeholder={t('booking.whatsappNumberPlaceholder')}
                         type="tel"
                       />
@@ -306,12 +309,12 @@ export default function Home({ services }: HomeProps) {
                     </div>
 
                     <div>
-                      <label className="block text-emerald-800 font-medium mb-2">
+                      <label className="block text-gray-800 font-medium mb-2">
                         {t('booking.carType')}
                       </label>
                       <select
                         {...register('car_type', { required: t('booking.required') })}
-                        className="w-full p-3 rounded-xl glass border-0 text-emerald-800"
+                        className="w-full p-3 rounded-xl glass border-0 text-gray-800"
                       >
                         <option value="">{t('booking.carTypePlaceholder')}</option>
                         {carTypes[locale as 'en' | 'ar'].map((type, index) => (
@@ -324,12 +327,12 @@ export default function Home({ services }: HomeProps) {
                     </div>
 
                     <div>
-                      <label className="block text-emerald-800 font-medium mb-2">
+                      <label className="block text-gray-800 font-medium mb-2">
                         {t('booking.area')}
                       </label>
                       <select
                         {...register('area', { required: t('booking.required') })}
-                        className="w-full p-3 rounded-xl glass border-0 text-emerald-800"
+                        className="w-full p-3 rounded-xl glass border-0 text-gray-800"
                       >
                         <option value="">{t('booking.areaPlaceholder')}</option>
                         {kuwaitAreas[locale as 'en' | 'ar'].map((area, index) => (
@@ -342,12 +345,12 @@ export default function Home({ services }: HomeProps) {
                     </div>
 
                     <div>
-                      <label className="block text-emerald-800 font-medium mb-2">
+                      <label className="block text-gray-800 font-medium mb-2">
                         {t('booking.fullAddress')}
                       </label>
                       <textarea
                         {...register('full_address', { required: t('booking.required') })}
-                        className="w-full p-3 rounded-xl glass border-0 text-emerald-800 placeholder-emerald-600 h-20 resize-none"
+                        className="w-full p-3 rounded-xl glass border-0 text-gray-800 placeholder-gray-600 h-20 resize-none"
                         placeholder={t('booking.fullAddressPlaceholder')}
                       />
                       {errors.full_address && (
@@ -357,14 +360,14 @@ export default function Home({ services }: HomeProps) {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-emerald-800 font-medium mb-2">
+                        <label className="block text-gray-800 font-medium mb-2">
                           {t('booking.preferredDate')}
                         </label>
                         <input
                           {...register('preferred_date', { required: t('booking.required') })}
                           type="date"
                           min={new Date().toISOString().split('T')[0]}
-                          className="w-full p-3 rounded-xl glass border-0 text-emerald-800"
+                          className="w-full p-3 rounded-xl glass border-0 text-gray-800"
                         />
                         {errors.preferred_date && (
                           <p className="text-red-500 text-sm mt-1">{errors.preferred_date.message}</p>
@@ -372,12 +375,12 @@ export default function Home({ services }: HomeProps) {
                       </div>
 
                       <div>
-                        <label className="block text-emerald-800 font-medium mb-2">
+                        <label className="block text-gray-800 font-medium mb-2">
                           {t('booking.preferredTime')}
                         </label>
                         <select
                           {...register('preferred_time', { required: t('booking.required') })}
-                          className="w-full p-3 rounded-xl glass border-0 text-emerald-800"
+                          className="w-full p-3 rounded-xl glass border-0 text-gray-800"
                         >
                           <option value="">{t('booking.preferredTimePlaceholder')}</option>
                           {timeSlots.map((time) => (
@@ -399,7 +402,7 @@ export default function Home({ services }: HomeProps) {
                           ? 'bg-green-100 text-green-800 border-green-300'
                           : locationStatus === 'error'
                           ? 'bg-red-100 text-red-800 border-red-300'
-                          : 'glass-button text-emerald-700'
+                          : 'glass-button text-gray-700'
                       }`}
                     >
                       {locationStatus === 'loading' && '📍 Getting location...'}
@@ -419,7 +422,7 @@ export default function Home({ services }: HomeProps) {
                       disabled={isSubmitting}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full glass-button haptic-feedback py-4 rounded-xl font-bold text-emerald-700 disabled:opacity-50"
+                      className="w-full glass-button haptic-feedback py-4 rounded-xl font-bold text-gray-700 disabled:opacity-50"
                     >
                       {isSubmitting ? t('booking.submitting') : t('booking.submit')}
                     </motion.button>

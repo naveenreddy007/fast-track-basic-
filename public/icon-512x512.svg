@@ -1,0 +1,45 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="64" fill="#374151"/>
+  <g transform="translate(86, 86)">
+    <!-- Car body -->
+    <path d="M53 213h235c23.6 0 42.7 19.1 42.7 42.7v64c0 23.6-19.1 42.7-42.7 42.7H53c-23.6 0-42.7-19.1-42.7-42.7v-64c0-23.6 19.1-42.7 42.7-42.7z" fill="#ffffff"/>
+    
+    <!-- Car roof -->
+    <path d="M85 213V171c0-23.6 19.1-42.7 42.7-42.7h85.3c23.6 0 42.7 19.1 42.7 42.7v42.7" fill="#ffffff"/>
+    
+    <!-- Windows -->
+    <rect x="96" y="139" width="64" height="64" rx="11" fill="#374151"/>
+    <rect x="181" y="139" width="64" height="64" rx="11" fill="#374151"/>
+    
+    <!-- Wheels -->
+    <circle cx="85" cy="320" r="32" fill="#374151"/>
+    <circle cx="256" cy="320" r="32" fill="#374151"/>
+    <circle cx="85" cy="320" r="16" fill="#ffffff"/>
+    <circle cx="256" cy="320" r="16" fill="#ffffff"/>
+    
+    <!-- Wheel details -->
+    <circle cx="85" cy="320" r="8" fill="#374151"/>
+    <circle cx="256" cy="320" r="8" fill="#374151"/>
+    
+    <!-- Water drops -->
+    <circle cx="43" cy="107" r="8" fill="#60A5FA" opacity="0.8"/>
+    <circle cx="299" cy="96" r="5" fill="#60A5FA" opacity="0.6"/>
+    <circle cx="64" cy="75" r="5" fill="#60A5FA" opacity="0.7"/>
+    <circle cx="277" cy="64" r="8" fill="#60A5FA" opacity="0.9"/>
+    <circle cx="32" cy="139" r="6" fill="#60A5FA" opacity="0.5"/>
+    <circle cx="309" cy="128" r="7" fill="#60A5FA" opacity="0.8"/>
+    
+    <!-- Sparkles -->
+    <path d="M320 117l5-16 5 16 16-5-16 5z" fill="#FDE047"/>
+    <path d="M21 160l3-8 3 8 8-3-8 3z" fill="#FDE047"/>
+    <path d="M309 181l3-8 3 8 8-3-8 3z" fill="#FDE047"/>
+    <path d="M16 96l2-5 2 5 5-2-5 2z" fill="#FDE047"/>
+    <path d="M325 64l2-5 2 5 5-2-5 2z" fill="#FDE047"/>
+    
+    <!-- Soap bubbles -->
+    <circle cx="53" cy="192" r="4" fill="#ffffff" opacity="0.6"/>
+    <circle cx="288" cy="203" r="3" fill="#ffffff" opacity="0.5"/>
+    <circle cx="75" cy="181" r="2" fill="#ffffff" opacity="0.7"/>
+    <circle cx="267" cy="171" r="3" fill="#ffffff" opacity="0.6"/>
+  </g>
+</svg>

@@ -41,6 +41,15 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
+    // Get all admin push subscriptions for notifications
+    const { data: subscriptions, error: subError } = await supabase
+      .from('admin_push_subscriptions')
+      .select('subscription_token');
+    
+    if (subError) {
+      console.error('Error fetching subscriptions:', subError);
+    }
+    
     // Get service details
     const { data: service, error: serviceError } = await supabase
       .from('services')
@@ -98,6 +107,39 @@ ${record.latitude && record.longitude ? `Navigate: ${mapsUrl}` : ''}`;
       
       const twilioResult = await twilioResponse.json();
       console.log('WhatsApp message sent:', twilioResult.sid);
+      
+      // Send push notifications to all admin devices
+      if (subscriptions && subscriptions.length > 0) {
+        const pushPromises = subscriptions.map(async (sub) => {
+          try {
+            const pushPayload = {
+              notification: {
+                title: 'Fast Track Wash',
+                body: 'New Fast Track Booking! 🚗✨ Tap to view.',
+                icon: '/icon-192x192.svg',
+                badge: '/icon-192x192.svg',
+                data: {
+                  url: '/admin',
+                  bookingId: record.id
+                }
+              }
+            };
+            
+            // Here you would typically use a push service like FCM or web-push
+            // For now, we'll log the push notification
+            console.log('Push notification would be sent to:', sub.subscription_token);
+            console.log('Push payload:', pushPayload);
+            
+            return { success: true, subscription: sub.subscription_token };
+          } catch (error) {
+            console.error('Error sending push notification:', error);
+            return { success: false, error: error.message };
+          }
+        });
+        
+        const pushResults = await Promise.allSettled(pushPromises);
+        console.log('Push notification results:', pushResults);
+      }
     } else {
       console.log('Twilio credentials not configured, skipping WhatsApp notification');
       console.log('Message would have been:', message);

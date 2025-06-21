@@ -22,30 +22,20 @@ body {
 }
 
 body {
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 25%, #fef9e7 50%, #fbf2c4 75%, #ecfdf5 100%);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background: #FFFFFF;
   min-height: 100vh;
 }
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+
 
 .glass {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .glass-dark {
-  background: rgba(16, 185, 129, 0.1);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .glass-button {

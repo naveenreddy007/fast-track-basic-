@@ -18,7 +18,11 @@ import {
   Car,
   LogOut,
   Save,
-  X
+  X,
+  Bell,
+  BellRing,
+  MessageSquare,
+  CheckCircle
 } from 'lucide-react';
 import { 
   supabase, 
@@ -61,22 +65,20 @@ export default function AdminDashboard({ initialServices, initialBookings }: Adm
   const [showServiceForm, setShowServiceForm] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [confirmTime, setConfirmTime] = useState('');
 
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<ServiceForm>();
 
   useEffect(() => {
-    checkUser();
-  }, []);
-
-  const checkUser = async () => {
-    try {
+    const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/admin/login');
         return;
       }
-
-      // Check if user is admin
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -87,35 +89,38 @@ export default function AdminDashboard({ initialServices, initialBookings }: Adm
         router.push('/admin/login');
         return;
       }
-
       setUser(user);
-      
-      // Set up real-time subscriptions
-      const bookingsSubscription = supabase
-        .channel('bookings')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-          refreshBookings();
-        })
-        .subscribe();
-
-      const servicesSubscription = supabase
-        .channel('services')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'services' }, () => {
-          refreshServices();
-        })
-        .subscribe();
-
-      return () => {
-        bookingsSubscription.unsubscribe();
-        servicesSubscription.unsubscribe();
-      };
-    } catch (error) {
-      console.error('Auth error:', error);
-      router.push('/admin/login');
-    } finally {
       setLoading(false);
-    }
-  };
+    };
+
+    checkUser();
+  }, [router]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    refreshBookings();
+    refreshServices();
+
+    const bookingsChannel = supabase.channel('custom-bookings-channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
+        console.log('Booking change received!', payload);
+        refreshBookings();
+      })
+      .subscribe();
+
+    const servicesChannel = supabase.channel('custom-services-channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'services' }, (payload) => {
+        console.log('Service change received!', payload);
+        refreshServices();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(bookingsChannel);
+      supabase.removeChannel(servicesChannel);
+    };
+  }, [user]);
 
   const refreshServices = async () => {
     try {
@@ -197,6 +202,113 @@ export default function AdminDashboard({ initialServices, initialBookings }: Adm
     }
   };
 
+  // Push notification functions
+  const requestNotificationPermission = async () => {
+    triggerHapticFeedback();
+    
+    if (!('Notification' in window)) {
+      alert('This browser does not support notifications');
+      return;
+    }
+    
+    if (!('serviceWorker' in navigator)) {
+      alert('This browser does not support service workers');
+      return;
+    }
+    
+    try {
+      const permission = await Notification.requestPermission();
+      
+      if (permission === 'granted') {
+        // Get service worker registration
+        const registration = await navigator.serviceWorker.ready;
+        
+        // Subscribe to push notifications
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa40HI0DLLat3eAALOhJGQwFNDtdAoU5RgQoY4S3x2RVBnb6KjjKstpfMcTVw')
+        });
+        
+        // Save subscription to database
+        const { error } = await supabase
+          .from('admin_push_subscriptions')
+          .upsert({
+            user_id: user.id,
+            subscription_token: subscription.toJSON()
+          });
+        
+        if (error) throw error;
+        
+        setNotificationsEnabled(true);
+        console.log('Push notifications enabled');
+      }
+    } catch (error) {
+      console.error('Error enabling notifications:', error);
+    }
+  };
+  
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+  
+  const handleConfirmBooking = (booking: Booking) => {
+    triggerHapticFeedback();
+    setSelectedBooking(booking);
+    setConfirmTime(booking.preferred_time);
+    setShowConfirmModal(true);
+  };
+  
+  const generateWhatsAppConfirmation = async () => {
+    if (!selectedBooking || !confirmTime) return;
+    
+    triggerHapticFeedback();
+    
+    try {
+      // Update booking status and confirmed time
+      await supabase
+        .from('bookings')
+        .update({ 
+          status: 'confirmed',
+          confirmed_time: confirmTime
+        })
+        .eq('id', selectedBooking.id);
+      
+      // Generate Arabic WhatsApp message
+      const message = `مرحباً ${selectedBooking.customer_name}! 🚗✨
+
+تم تأكيد حجز خدمة غسيل السيارة:
+📅 التاريخ: ${selectedBooking.preferred_date}
+⏰ الوقت المؤكد: ${confirmTime}
+📍 العنوان: ${selectedBooking.full_address}
+🚙 نوع السيارة: ${selectedBooking.car_type}
+
+سيصل فريقنا في الوقت المحدد. شكراً لاختياركم Fast Track Wash! 🙏`;
+      
+      // Open WhatsApp with pre-filled message
+      const whatsappUrl = `https://wa.me/${selectedBooking.whatsapp_number}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+      
+      // Refresh bookings
+      await refreshBookings();
+      setShowConfirmModal(false);
+      setSelectedBooking(null);
+      setConfirmTime('');
+    } catch (error) {
+      console.error('Error confirming booking:', error);
+    }
+  };
+
   const handleUpdateBookingStatus = async (id: number, status: string) => {
     triggerHapticFeedback();
     try {
@@ -236,13 +348,32 @@ export default function AdminDashboard({ initialServices, initialBookings }: Adm
               </div>
             </div>
             
-            <button
-              onClick={handleLogout}
-              className="glass-button haptic-feedback px-4 py-2 rounded-xl flex items-center space-x-2 rtl:space-x-reverse text-emerald-700"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>{t('admin.logout')}</span>
-            </button>
+            <div className="flex items-center space-x-3 rtl:space-x-reverse">
+              {/* Bell Icon for Notifications */}
+              <button
+                onClick={requestNotificationPermission}
+                className={`glass-button haptic-feedback p-3 rounded-xl transition-all ${
+                  notificationsEnabled 
+                    ? 'text-emerald-600 bg-emerald-50' 
+                    : 'text-gray-600 hover:text-emerald-600'
+                }`}
+                title="Enable Push Notifications"
+              >
+                {notificationsEnabled ? (
+                  <BellRing className="w-6 h-6" />
+                ) : (
+                  <Bell className="w-6 h-6" />
+                )}
+              </button>
+              
+              <button
+                onClick={handleLogout}
+                className="glass-button haptic-feedback px-4 py-2 rounded-xl flex items-center space-x-2 rtl:space-x-reverse text-emerald-700"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>{t('admin.logout')}</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -351,18 +482,31 @@ export default function AdminDashboard({ initialServices, initialBookings }: Adm
                         </span>
                       </div>
                       
-                      {booking.latitude && booking.longitude && (
-                        <a
-                          href={generateMapsUrl(booking.latitude, booking.longitude)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => triggerHapticFeedback()}
-                          className="glass-button haptic-feedback px-4 py-2 rounded-lg flex items-center space-x-2 rtl:space-x-reverse text-emerald-700 text-sm"
-                        >
-                          <MapPin className="w-4 h-4" />
-                          <span>{t('admin.bookings.navigate')}</span>
-                        </a>
-                      )}
+                      <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                        {/* Confirm & Notify Button for pending bookings */}
+                        {booking.status === 'pending' && (
+                          <button
+                            onClick={() => handleConfirmBooking(booking)}
+                            className="glass-button haptic-feedback px-4 py-2 rounded-lg flex items-center space-x-2 rtl:space-x-reverse text-emerald-700 text-sm bg-emerald-50 hover:bg-emerald-100"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            <span>Confirm & Notify</span>
+                          </button>
+                        )}
+                        
+                        {booking.latitude && booking.longitude && (
+                          <a
+                            href={generateMapsUrl(booking.latitude, booking.longitude)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => triggerHapticFeedback()}
+                            className="glass-button haptic-feedback px-4 py-2 rounded-lg flex items-center space-x-2 rtl:space-x-reverse text-emerald-700 text-sm"
+                          >
+                            <MapPin className="w-4 h-4" />
+                            <span>{t('admin.bookings.navigate')}</span>
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 ))
@@ -570,6 +714,101 @@ export default function AdminDashboard({ initialServices, initialBookings }: Adm
                     </button>
                   </div>
                 </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Confirmation Modal */}
+        <AnimatePresence>
+          {showConfirmModal && selectedBooking && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="glass p-8 rounded-2xl max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-emerald-800">Confirm Booking</h3>
+                  <button
+                    onClick={() => setShowConfirmModal(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-emerald-700 mb-1">
+                      Customer
+                    </label>
+                    <p className="text-emerald-800">{selectedBooking.customer_name}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-emerald-700 mb-1">
+                      Service
+                    </label>
+                    <p className="text-emerald-800">
+                      {selectedBooking.service ? (locale === 'ar' ? selectedBooking.service.name_ar : selectedBooking.service.name_en) : 'N/A'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-emerald-700 mb-1">
+                      Preferred Date & Time
+                    </label>
+                    <p className="text-emerald-800">
+                      {formatDate(selectedBooking.preferred_date, locale)} at {selectedBooking.preferred_time}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-emerald-700 mb-1">
+                      Address
+                    </label>
+                    <p className="text-emerald-800">{selectedBooking.full_address}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-emerald-700 mb-2">
+                      Confirm Wash Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={confirmTime}
+                      onChange={(e) => setConfirmTime(e.target.value)}
+                      className="w-full glass border-0 rounded-lg px-4 py-3 text-emerald-800 focus:ring-2 focus:ring-emerald-500"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex space-x-4 rtl:space-x-reverse">
+                  <button
+                    onClick={() => setShowConfirmModal(false)}
+                    className="flex-1 glass-button haptic-feedback py-3 rounded-xl font-medium text-emerald-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={generateWhatsAppConfirmation}
+                    disabled={!confirmTime}
+                    className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-medium haptic-feedback disabled:opacity-50 flex items-center justify-center space-x-2 rtl:space-x-reverse"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Generate WhatsApp Confirmation</span>
+                  </button>
+                </div>
               </motion.div>
             </motion.div>
           )}

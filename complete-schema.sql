@@ -31,21 +31,31 @@ CREATE TABLE IF NOT EXISTS public.services (
 
 -- Create bookings table
 CREATE TABLE IF NOT EXISTS public.bookings (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  customer_name VARCHAR(255) NOT NULL,
-  whatsapp_number VARCHAR(20) NOT NULL,
-  car_type VARCHAR(100),
-  area VARCHAR(255),
-  full_address TEXT,
+  id BIGSERIAL PRIMARY KEY,
+  customer_name TEXT NOT NULL,
+  whatsapp_number TEXT NOT NULL,
+  car_type TEXT NOT NULL,
+  area TEXT NOT NULL,
+  full_address TEXT NOT NULL,
   preferred_date DATE NOT NULL,
-  preferred_time VARCHAR(50) NOT NULL,
-  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'in_progress', 'completed', 'cancelled')),
-  service_id BIGINT REFERENCES public.services(id) ON DELETE SET NULL,
-  latitude DOUBLE PRECISION,
-  longitude DOUBLE PRECISION,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  preferred_time TIME NOT NULL,
+  confirmed_time TIME,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'in_progress', 'completed', 'cancelled')),
+  service_id BIGINT REFERENCES public.services(id) ON DELETE CASCADE,
+  latitude DECIMAL(10, 8),
+  longitude DECIMAL(11, 8),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Create admin push subscriptions table
+CREATE TABLE IF NOT EXISTS public.admin_push_subscriptions (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  subscription_token JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE(user_id, subscription_token)
 );
 
 -- Create indexes for better performance
@@ -59,6 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for profiles
 CREATE POLICY "Users can view own profile" ON public.profiles
@@ -88,24 +99,24 @@ CREATE POLICY "Admins can manage services" ON public.services
   );
 
 -- RLS Policies for bookings
-CREATE POLICY "Anyone can create bookings" ON public.bookings
+CREATE POLICY "Users can view all bookings" ON public.bookings
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can create bookings" ON public.bookings
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Admins can view all bookings" ON public.bookings
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
-
 CREATE POLICY "Admins can update bookings" ON public.bookings
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  FOR UPDATE USING (is_admin());
+
+CREATE POLICY "Admins can delete bookings" ON public.bookings
+  FOR DELETE USING (is_admin());
+
+-- RLS Policies for admin_push_subscriptions
+CREATE POLICY "Admins can manage their own push subscriptions" ON public.admin_push_subscriptions
+  FOR ALL USING (auth.uid() = user_id AND is_admin());
+
+CREATE POLICY "Admins can view all push subscriptions" ON public.admin_push_subscriptions
+  FOR SELECT USING (is_admin());
 
 -- Function to handle new user registration
 CREATE OR REPLACE FUNCTION public.handle_new_user()
