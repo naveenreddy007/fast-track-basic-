@@ -99,17 +99,27 @@ CREATE POLICY "Admins can manage services" ON public.services
   );
 
 -- RLS Policies for bookings
-CREATE POLICY "Users can view all bookings" ON public.bookings
+CREATE POLICY "Anyone can view bookings" ON public.bookings
   FOR SELECT USING (true);
 
-CREATE POLICY "Users can create bookings" ON public.bookings
+CREATE POLICY "Anyone can create bookings" ON public.bookings
   FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Admins can update bookings" ON public.bookings
-  FOR UPDATE USING (is_admin());
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
 
 CREATE POLICY "Admins can delete bookings" ON public.bookings
-  FOR DELETE USING (is_admin());
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
 
 -- RLS Policies for admin_push_subscriptions
 CREATE POLICY "Admins can manage their own push subscriptions" ON public.admin_push_subscriptions

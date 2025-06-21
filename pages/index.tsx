@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { GetStaticProps } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -237,7 +237,7 @@ export default function Home({ services }: HomeProps) {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="glass-dark p-6 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+                className="glass-dark p-4 sm:p-6 rounded-3xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-2 sm:mx-0"
               >
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-2xl font-bold text-gray-800">
@@ -282,7 +282,7 @@ export default function Home({ services }: HomeProps) {
                       </label>
                       <input
                         {...register('customer_name', { required: t('booking.required') })}
-                        className="w-full p-3 rounded-xl glass border-0 text-gray-800 placeholder-gray-600"
+                        className="w-full p-4 text-base rounded-xl glass border-0 text-gray-800 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         placeholder={t('booking.customerNamePlaceholder')}
                       />
                       {errors.customer_name && (
@@ -299,7 +299,7 @@ export default function Home({ services }: HomeProps) {
                           required: t('booking.required'),
                           validate: (value) => validateWhatsAppNumber(value) || t('booking.invalidPhone')
                         })}
-                        className="w-full p-3 rounded-xl glass border-0 text-gray-800 placeholder-gray-600"
+                        className="w-full p-4 text-base rounded-xl glass border-0 text-gray-800 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         placeholder={t('booking.whatsappNumberPlaceholder')}
                         type="tel"
                       />
@@ -314,7 +314,7 @@ export default function Home({ services }: HomeProps) {
                       </label>
                       <select
                         {...register('car_type', { required: t('booking.required') })}
-                        className="w-full p-3 rounded-xl glass border-0 text-gray-800"
+                        className="w-full p-4 text-base rounded-xl glass border-0 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       >
                         <option value="">{t('booking.carTypePlaceholder')}</option>
                         {carTypes[locale as 'en' | 'ar'].map((type, index) => (
@@ -332,7 +332,7 @@ export default function Home({ services }: HomeProps) {
                       </label>
                       <select
                         {...register('area', { required: t('booking.required') })}
-                        className="w-full p-3 rounded-xl glass border-0 text-gray-800"
+                        className="w-full p-4 text-base rounded-xl glass border-0 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       >
                         <option value="">{t('booking.areaPlaceholder')}</option>
                         {kuwaitAreas[locale as 'en' | 'ar'].map((area, index) => (
@@ -350,7 +350,7 @@ export default function Home({ services }: HomeProps) {
                       </label>
                       <textarea
                         {...register('full_address', { required: t('booking.required') })}
-                        className="w-full p-3 rounded-xl glass border-0 text-gray-800 placeholder-gray-600 h-20 resize-none"
+                        className="w-full p-4 text-base rounded-xl glass border-0 text-gray-800 placeholder-gray-600 h-24 resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         placeholder={t('booking.fullAddressPlaceholder')}
                       />
                       {errors.full_address && (
@@ -358,7 +358,7 @@ export default function Home({ services }: HomeProps) {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-gray-800 font-medium mb-2">
                           {t('booking.preferredDate')}
@@ -367,7 +367,7 @@ export default function Home({ services }: HomeProps) {
                           {...register('preferred_date', { required: t('booking.required') })}
                           type="date"
                           min={new Date().toISOString().split('T')[0]}
-                          className="w-full p-3 rounded-xl glass border-0 text-gray-800"
+                          className="w-full p-4 text-base rounded-xl glass border-0 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                         {errors.preferred_date && (
                           <p className="text-red-500 text-sm mt-1">{errors.preferred_date.message}</p>
@@ -380,7 +380,7 @@ export default function Home({ services }: HomeProps) {
                         </label>
                         <select
                           {...register('preferred_time', { required: t('booking.required') })}
-                          className="w-full p-3 rounded-xl glass border-0 text-gray-800"
+                          className="w-full p-4 text-base rounded-xl glass border-0 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         >
                           <option value="">{t('booking.preferredTimePlaceholder')}</option>
                           {timeSlots.map((time) => (
@@ -397,7 +397,7 @@ export default function Home({ services }: HomeProps) {
                       type="button"
                       onClick={handleGetLocation}
                       disabled={locationStatus === 'loading'}
-                      className={`w-full p-3 rounded-xl font-medium haptic-feedback transition-all ${
+                      className={`w-full p-4 text-base rounded-xl font-medium haptic-feedback transition-all min-h-[48px] ${
                         locationStatus === 'success'
                           ? 'bg-green-100 text-green-800 border-green-300'
                           : locationStatus === 'error'
@@ -422,7 +422,7 @@ export default function Home({ services }: HomeProps) {
                       disabled={isSubmitting}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full glass-button haptic-feedback py-4 rounded-xl font-bold text-gray-700 disabled:opacity-50"
+                      className="w-full glass-button haptic-feedback py-4 px-4 text-base rounded-xl font-bold text-gray-700 disabled:opacity-50 min-h-[56px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
                       {isSubmitting ? t('booking.submitting') : t('booking.submit')}
                     </motion.button>
